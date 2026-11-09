@@ -66,8 +66,10 @@ export function Navbar() {
   const pathname = usePathname()
   const [open, setOpen] = React.useState(false)
 
+  // z-10 keeps the bar above the hero backdrop, which bleeds up behind it
+  // exactly as Figma's "Group 1" does (it starts 70px above the page frame).
   return (
-    <header className="mt-6 px-4 sm:px-6 xl:px-[60px]">
+    <header className="relative z-10 mt-6 px-4 sm:px-6 xl:px-[60px]">
       <div className="mx-auto flex h-[74px] w-full max-w-[1320px] items-center justify-between gap-4 rounded-[16px] bg-[#222222] px-6">
         <Link
           href="/"

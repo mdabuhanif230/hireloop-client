@@ -1,4 +1,10 @@
-import { Geist, Geist_Mono, Instrument_Sans, Manrope } from "next/font/google"
+import {
+  Geist,
+  Geist_Mono,
+  Instrument_Sans,
+  Manrope,
+  Space_Mono,
+} from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -12,12 +18,18 @@ const fontMono = Geist_Mono({
   variable: "--font-mono",
 })
 
-// Navbar button typefaces from the Figma spec (Sign In = Manrope SemiBold,
-// Get Started = Instrument Sans Medium).
+// Hero + navbar typefaces from the Figma spec (Sign In = Manrope SemiBold,
+// Get Started = Instrument Sans Medium, H1 = Manrope Bold, badge = Space Mono).
 const manrope = Manrope({
   subsets: ["latin"],
-  weight: ["600"],
+  weight: ["400", "600", "700"],
   variable: "--font-manrope",
+})
+
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-space-mono",
 })
 
 const instrumentSans = Instrument_Sans({
@@ -41,6 +53,7 @@ export default function RootLayout({
         "font-sans",
         geist.variable,
         manrope.variable,
+        spaceMono.variable,
         instrumentSans.variable,
       )}
     >
