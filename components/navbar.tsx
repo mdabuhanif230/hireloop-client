@@ -20,9 +20,8 @@ import {
 import { cn } from "@/lib/utils"
 
 const navLinks = [
-  { label: "Home", href: "/" },
   { label: "Browse Jobs", href: "/jobs" },
-  { label: "Companies", href: "/companies" },
+  { label: "Company", href: "/companies" },
   { label: "Pricing", href: "/pricing" },
 ] as const
 
@@ -86,11 +85,11 @@ export function Navbar() {
           />
         </Link>
 
-        {/* Desktop — Figma "nav-bar" frame: bg #222, radius 16, padding 32/8,
-            Frame-3 gap 24, links gap 40, 24px divider. Tightens below xl. */}
+        {/* Desktop links sit inside the main bar; its outer padding aligns the
+            logo and the Get Started button with the two ends of the reference. */}
         <nav
           aria-label="Main"
-          className="hidden h-full items-center gap-6 rounded-[16px] bg-[#222222] px-6 py-2 lg:flex xl:px-8"
+          className="hidden h-full items-center gap-6 lg:flex"
         >
           <ul className="flex items-center gap-5 xl:gap-10">
             {navLinks.map((link) => (

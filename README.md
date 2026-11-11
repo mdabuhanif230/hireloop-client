@@ -1,21 +1,88 @@
-# Next.js template
+# hireloop-client
 
-This is a Next.js template with shadcn/ui.
+Frontend for **HireLoop** — a job-hiring platform. Next.js App Router app built pixel-faithfully from Figma frames, with auth scaffolded against a local MongoDB.
 
-## Adding components
+> Status: homepage + shell are live; auth is wired at the API level but has no UI yet.
 
-To add components to your app, run the following command:
+## What's built
+
+- **Navbar** (`components/navbar.tsx`) — `#222` bar, radius 16, HireLoop logo, nav links (Home / Browse Jobs / Companies / Pricing), Sign In + Get Started buttons, and a mobile Sheet menu (`components/ui/sheet.tsx`) matching the Figma `HL/Menu` symbol.
+- **Homepage hero** (`components/hero.tsx`) — the Figma "Homepage" frame composited on `#010103`: dot-grid, glow/haze layers with the Figma coordinate system preserved, the "Find Your Dream Job Today" headline, a job search form (title + location) and trending-position chips. Submitting pushes to `/jobs?query=…&location=…` — that route doesn't exist yet, so search currently lands on a 404.
+- **Stats band** (`components/stats-section.tsx`) — globe backdrop (`public/images/globe.png`, cropped so only the blue horizon shows), the "Assisting over 15,000 job seekers…" statement and 4 metric cards (50K / 12K / 2M / 97%).
+- **Theming** — `next-themes`, `class` attribute, system default; press **`d`** to toggle dark/light (ignores typing in inputs).
+- **Fonts** — Geist, Geist Mono, Manrope (Sign In), Instrument Sans (Get Started) via `next/font`; Satoshi self-hosted from `public/fonts/` (Fontshare — not Google Fonts).
+- **Auth (API only)** — better-auth + MongoDB adapter served from `app/api/auth/[...all]/route.ts`, Google social provider configured, `better-auth/react` client in `lib/auth-client.ts`.
+
+## Not built yet
+
+- `Browse Jobs`, `Companies`, `Pricing` are navbar links only — those routes 404.
+- No auth UI (sign-in/sign-up screens) and no session-protected pages.
+- `hooks/` is empty; `components/.gitkeep` / `lib/.gitkeep` are placeholders.
+
+## Tech stack
+
+| | |
+|---|---|
+| Framework | Next.js **16.4.4** (App Router, Turbopack), React 19.3 |
+| Styling | Tailwind CSS **v4** (no config file — tokens in `app/globals.css`), `tw-animate-css` |
+| Components | shadcn/ui, style **`base-nova`** → primitives from **`@base-ui/react`** (not Radix) |
+| Auth | better-auth 1.7 + `@better-auth/mongo-adapter`, MongoDB driver 7 |
+| Theme | next-themes |
+| Icons | lucide-react |
+| Tooling | TypeScript 5 (strict), ESLint 9 (`eslint-config-next`), Prettier 3 + `prettier-plugin-tailwindcss` |
+
+## Getting started
 
 ```bash
-npx shadcn@latest add button
+npm install        # on PowerShell shells that block npm.ps1, use: npm.cmd install
+npm.cmd run dev
+
+# create .env with the keys listed below if you want auth to work
 ```
 
-This will place the ui components in the `components` directory.
+### Environment (`.env`, gitignored)
 
-## Using components
+| Variable | Required for | Notes |
+|---|---|---|
+| `BETTER_AUTH_SECRET` | auth | required by better-auth |
+| `BETTER_AUTH_URL` | auth | base URL of this app |
+| `GOOGLE_CLIENT_ID` | Google sign-in | **not committed** — add your own |
+| `GOOGLE_CLIENT_SECRET` | Google sign-in | **not committed** — add your own |
 
-To use the components in your app, import them as follows:
+MongoDB is currently **hardcoded** in `lib/auth.ts` to `mongodb://localhost:27017/database` (db `hireloopdb`) — run a local MongoDB or edit that file before exercising auth.
 
-```tsx
-import { Button } from "@/components/ui/button";
+## Commands
+
+| Command | What it does |
+|---|---|
+| `npm.cmd run dev` | dev server |
+| `npm.cmd run build` | production build |
+| `npm.cmd run typecheck` | `tsc --noEmit` |
+| `npm.cmd run lint` | ESLint |
+| `npm.cmd run format` | Prettier over `**/*.{ts,tsx}` |
+
+There is no test suite — `typecheck` → `lint` is the verification gate.
+
+## Project structure
+
 ```
+app/
+  layout.tsx            root: fonts, ThemeProvider, Navbar, <body suppressHydrationWarning>
+  page.tsx              homepage → components/hero
+  globals.css           Tailwind v4 @theme tokens, Satoshi @font-face
+  api/auth/[...all]/    better-auth catch-all route
+components/
+  navbar.tsx hero.tsx theme-provider.tsx
+  ui/                   shadcn-generated primitives (button, sheet)
+lib/                    auth.ts, auth-client.ts, utils.ts (cn re-export)
+public/images/          logo, dot-grid, line-art, globe (in use); cta-bg (staged)
+public/logos/           company logos (adobe…uber) — staged, nothing imports them yet
+```
+
+## Conventions worth knowing
+
+- Paths alias `@/*` → repo root.
+- Assets live in `public/` and are referenced from the web root: `/images/logo.png` (never `./public/...`).
+- Fonts need registering in **both** `app/layout.tsx` (next/font) and `@theme inline` in `globals.css` before `font-*` utilities work.
+- `<body>` carries `suppressHydrationWarning` on purpose — browser extensions inject attributes into it before hydration. Don't remove it.
+- `AGENTS.md` / `CLAUDE.md` contain agent instructions and are partly regenerated by `next dev`; commit them as-is.

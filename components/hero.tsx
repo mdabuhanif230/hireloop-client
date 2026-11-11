@@ -114,11 +114,14 @@ export function Hero() {
     router.push(search ? `/jobs?${search}` : "/jobs")
   }
 
+  // Content-height, not 100vh: the Figma frame shows hero + stats band in one
+  // view, so the hero ends on its own padding instead of stretching to the
+  // viewport and pushing the globe section below the fold.
   return (
-    <section className="relative min-h-[calc(100svh-98px)]">
+    <section className="relative">
       <HeroBackdrop />
 
-      <div className="relative mx-auto flex w-full max-w-[784px] flex-col gap-12 px-4 pb-16 pt-16 sm:px-6 sm:pb-24 sm:pt-24 lg:px-0 lg:pb-[286px] lg:pt-[176px]">
+      <div className="relative mx-auto flex w-full max-w-[784px] flex-col gap-12 px-4 pb-16 pt-16 sm:px-6 sm:pb-24 sm:pt-24 lg:px-0 lg:pb-[104px] lg:pt-[176px]">
         {/* Badge + headline — Figma "Frame 2147234455", gap 32, centred */}
         <div className="flex flex-col items-center gap-8">
           {/* Badge row — 64px rules flanking a 48px pill, Figma "Frame 2147234462".
@@ -248,6 +251,13 @@ export function Hero() {
           </div>
         </div>
       </div>
+
+      {/* Fade the hero's haze into the page base so the backdrop's clip edge at
+          the section boundary doesn't show as a seam above the globe band. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[80px] bg-[linear-gradient(180deg,rgba(1,1,3,0)_0%,#010103_100%)]"
+      />
     </section>
   )
 }
