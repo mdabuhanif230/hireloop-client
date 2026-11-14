@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import * as React from "react"
 
 import { MenuIcon, XIcon } from "lucide-react"
@@ -17,6 +17,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { authClient } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
 
 const navLinks = [
@@ -62,8 +63,24 @@ function NavLink({
 }
 
 export function Navbar() {
+  const router = useRouter()
   const pathname = usePathname()
   const [open, setOpen] = React.useState(false)
+
+  // Single shared client — see lib/auth-client.ts. `isPending` on first paint
+  // renders a placeholder so the bar doesn't flash "Sign In" before the session
+  // resolves (and doesn't jump when the signed-in state lands).
+  const { data: session, isPending } = authClient.useSession()
+  const [signingOut, setSigningOut] = React.useState(false)
+
+  async function onSignOut() {
+    setSigningOut(true)
+    await authClient.signOut()
+    setSigningOut(false)
+    setOpen(false)
+    router.push("/")
+    router.refresh()
+  }
 
   // z-10 keeps the bar above the hero backdrop, which bleeds up behind it
   // exactly as Figma's "Group 1" does (it starts 70px above the page frame).
@@ -110,12 +127,45 @@ export function Navbar() {
           />
 
           <div className="flex shrink-0 items-center gap-4">
-            <Button variant="default" className={signInClassName}>
-              Sign In
-            </Button>
-            <Button variant="default" className={getStartedClassName}>
-              Get Started
-            </Button>
+            {isPending ? (
+              <span
+                aria-hidden="true"
+                className="h-[54px] w-[264px] rounded-[12px] bg-white/[0.04]"
+              />
+            ) : session ? (
+              <>
+                <span className="hidden max-w-[170px] truncate font-manrope text-[17px] leading-[1.45] font-semibold text-white xl:inline">
+                  {session.user.name || session.user.email}
+                </span>
+                <Button
+                  variant="default"
+                  onClick={onSignOut}
+                  disabled={signingOut}
+                  className={signInClassName}
+                >
+                  Sign out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  render={<Link href="/sign-in" />}
+                  nativeButton={false}
+                  variant="default"
+                  className={signInClassName}
+                >
+                  Sign In
+                </Button>
+                <Button
+                  render={<Link href="/sign-up" />}
+                  nativeButton={false}
+                  variant="default"
+                  className={getStartedClassName}
+                >
+                  Get Started
+                </Button>
+              </>
+            )}
           </div>
         </nav>
 
@@ -163,7 +213,7 @@ export function Navbar() {
                       "flex h-9 items-center rounded-md px-2.5 text-sm transition-colors",
                       active
                         ? "bg-white/10 font-medium text-white"
-                        : "font-normal text-white/80 hover:bg-white/5 hover:text-white",
+                        : "font-normal text-white/80 hover:bg-white/5 hover:text-white"
                     )}
                   >
                     {link.label}
@@ -173,18 +223,45 @@ export function Navbar() {
             </nav>
 
             <div className="mt-1 flex flex-col gap-2 border-t border-white/10 p-2.5 pt-3">
-              <Button
-                variant="default"
-                className={cn(signInClassName, "h-11 w-full")}
-              >
-                Sign In
-              </Button>
-              <Button
-                variant="default"
-                className={cn(getStartedClassName, "h-11 w-full")}
-              >
-                Get Started
-              </Button>
+              {isPending ? (
+                <span
+                  aria-hidden="true"
+                  className="h-11 rounded-[12px] bg-white/[0.06]"
+                />
+              ) : session ? (
+                <>
+                  <span className="truncate px-2.5 pt-1.5 font-manrope text-[15px] leading-[1.45] font-semibold text-white">
+                    {session.user.name || session.user.email}
+                  </span>
+                  <Button
+                    variant="default"
+                    onClick={onSignOut}
+                    disabled={signingOut}
+                    className={cn(signInClassName, "h-11 w-full")}
+                  >
+                    Sign out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    render={<Link href="/sign-in" />}
+                    nativeButton={false}
+                    variant="default"
+                    className={cn(signInClassName, "h-11 w-full")}
+                  >
+                    Sign In
+                  </Button>
+                  <Button
+                    render={<Link href="/sign-up" />}
+                    nativeButton={false}
+                    variant="default"
+                    className={cn(getStartedClassName, "h-11 w-full")}
+                  >
+                    Get Started
+                  </Button>
+                </>
+              )}
             </div>
           </SheetContent>
         </Sheet>

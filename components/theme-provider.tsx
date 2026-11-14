@@ -47,7 +47,9 @@ function ThemeHotkey() {
         return
       }
 
-      if (event.key.toLowerCase() !== "d") {
+      // Some extensions dispatch keydown with no `key` (it arrives undefined),
+      // which used to throw here and kill the handler for every later press.
+      if (typeof event.key !== "string" || event.key.toLowerCase() !== "d") {
         return
       }
 
