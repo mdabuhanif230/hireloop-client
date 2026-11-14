@@ -4,7 +4,13 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import * as React from "react"
 
-import { MailIcon, UserIcon } from "lucide-react"
+import {
+  BriefcaseIcon,
+  MailIcon,
+  SearchIcon,
+  ShieldCheckIcon,
+  UserIcon,
+} from "lucide-react"
 
 import {
   AuthDivider,
@@ -13,11 +19,35 @@ import {
   CheckboxField,
   GoogleSignInButton,
   PasswordField,
+  RoleField,
   TextField,
+  type RoleOption,
 } from "@/components/auth/form-fields"
 import { authClient } from "@/lib/auth-client"
+import { DEFAULT_ROLE, type Role } from "@/lib/roles"
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+const roleOptions: RoleOption<Role>[] = [
+  {
+    value: "seeker",
+    label: "Seeker",
+    hint: "I'm looking for a job",
+    icon: <SearchIcon aria-hidden="true" className="size-4" />,
+  },
+  {
+    value: "recruiter",
+    label: "Recruiter",
+    hint: "I'm hiring for a company",
+    icon: <BriefcaseIcon aria-hidden="true" className="size-4" />,
+  },
+  {
+    value: "admin",
+    label: "Admin",
+    hint: "I run the platform",
+    icon: <ShieldCheckIcon aria-hidden="true" className="size-4" />,
+  },
+]
 
 type FieldErrors = {
   name?: string
@@ -78,6 +108,7 @@ export function SignUpForm() {
   const [name, setName] = React.useState("")
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
+  const [role, setRole] = React.useState<Role>(DEFAULT_ROLE)
   const [acceptedTerms, setAcceptedTerms] = React.useState(false)
   const [errors, setErrors] = React.useState<FieldErrors>({})
   const [formError, setFormError] = React.useState<string | null>(null)
@@ -146,6 +177,7 @@ export function SignUpForm() {
       name: trimmedName,
       email: trimmedEmail,
       password,
+      role,
     })
     setPending(false)
 
@@ -238,6 +270,14 @@ export function SignUpForm() {
             />
             <PasswordStrength value={password} />
           </div>
+
+          <RoleField
+            id="sign-up-role"
+            label="I am joining HireLoop as a"
+            options={roleOptions}
+            value={role}
+            onValueChange={setRole}
+          />
         </div>
 
         <CheckboxField

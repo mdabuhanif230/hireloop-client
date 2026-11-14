@@ -205,6 +205,119 @@ export function CheckboxField({
   )
 }
 
+export type RoleOption<T extends string = string> = {
+  value: T
+  label: string
+  /** One-line supporting copy shown under the label. */
+  hint: string
+  icon: React.ReactNode
+}
+
+/** Radio cards for picking the account role at sign-up. Native radios stay
+ *  in the DOM (sr-only) for a11y and each card is painted by the component
+ *  so it tracks the controlled `value` — the same trick as CheckboxField. */
+export function RoleField<T extends string>({
+  id,
+  label,
+  options,
+  value,
+  onValueChange,
+  error,
+}: {
+  id: string
+  label: string
+  options: ReadonlyArray<RoleOption<T>>
+  value: T
+  onValueChange: (value: T) => void
+  error?: string
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <span id={`${id}-label`} className={labelClassName}>
+        {label}
+      </span>
+
+      <div
+        role="radiogroup"
+        aria-labelledby={`${id}-label`}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
+        className="grid gap-2.5 sm:grid-cols-3"
+      >
+        {options.map((option) => {
+          const selected = option.value === value
+
+          return (
+            <label key={option.value} className="group block cursor-pointer">
+              <input
+                type="radio"
+                name={id}
+                value={option.value}
+                checked={selected}
+                onChange={() => onValueChange(option.value)}
+                className="peer sr-only"
+              />
+
+              <span
+                className={cn(
+                  "flex flex-col gap-1.5 rounded-[12px] border p-3.5 transition-colors peer-focus-visible:ring-3 peer-focus-visible:ring-[#5c53fe]/45 peer-focus-visible:outline-none",
+                  selected
+                    ? "border-[#5c53fe] bg-[#5c53fe]/10"
+                    : "border-white/10 bg-[#101012] group-hover:border-white/25"
+                )}
+              >
+                <span className="flex items-center justify-between">
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "transition-colors",
+                      selected ? "text-[#9d97ff]" : "text-white/45"
+                    )}
+                  >
+                    {option.icon}
+                  </span>
+
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "grid size-[14px] place-items-center rounded-full border transition-colors",
+                      selected
+                        ? "border-[#5c53fe] bg-[#5c53fe]"
+                        : "border-white/30 group-hover:border-white/50"
+                    )}
+                  >
+                    <CheckIcon
+                      className={cn(
+                        "size-2.5 text-white transition-opacity",
+                        selected ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                  </span>
+                </span>
+
+                <span
+                  className={cn(
+                    "font-manrope text-[14px] leading-[1.4] font-semibold",
+                    selected ? "text-white" : "text-white/80"
+                  )}
+                >
+                  {option.label}
+                </span>
+
+                <span className="font-manrope text-[12px] leading-[1.4] text-white/45">
+                  {option.hint}
+                </span>
+              </span>
+            </label>
+          )
+        })}
+      </div>
+
+      {error ? <FieldError id={`${id}-error`} message={error} /> : null}
+    </div>
+  )
+}
+
 export function GoogleSignInButton({
   onClick,
   disabled,
