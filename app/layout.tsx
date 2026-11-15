@@ -2,16 +2,20 @@ import {
   Geist,
   Geist_Mono,
   Instrument_Sans,
+  Inter,
+  Inter_Tight,
   Manrope,
+  Plus_Jakarta_Sans,
+  Rethink_Sans,
   Space_Mono,
 } from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Navbar } from "@/components/navbar"
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'})
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
@@ -22,7 +26,7 @@ const fontMono = Geist_Mono({
 // Get Started = Instrument Sans Medium, H1 = Manrope Bold, badge = Space Mono).
 const manrope = Manrope({
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-manrope",
 })
 
@@ -36,6 +40,33 @@ const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
   weight: ["500"],
   variable: "--font-instrument-sans",
+})
+
+// Section typefaces from the Figma spec: Plus Jakarta Sans (stats values,
+// pricing titles/prices), Inter Tight (stats labels, chips, feature copy),
+// Inter (job-card titles/body), Rethink Sans (CTA headline).
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  variable: "--font-plus-jakarta-sans",
+})
+
+const interTight = Inter_Tight({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-inter-tight",
+})
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-inter",
+})
+
+const rethinkSans = Rethink_Sans({
+  subsets: ["latin"],
+  weight: ["500"],
+  variable: "--font-rethink-sans",
 })
 
 export default function RootLayout({
@@ -55,6 +86,10 @@ export default function RootLayout({
         manrope.variable,
         spaceMono.variable,
         instrumentSans.variable,
+        plusJakartaSans.variable,
+        interTight.variable,
+        inter.variable,
+        rethinkSans.variable
       )}
     >
       {/* suppressHydrationWarning only applies to this exact element: browser

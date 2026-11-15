@@ -121,7 +121,7 @@ export function Hero() {
     <section className="relative">
       <HeroBackdrop />
 
-      <div className="relative mx-auto flex w-full max-w-[784px] flex-col gap-12 px-4 pb-16 pt-16 sm:px-6 sm:pb-24 sm:pt-24 lg:px-0 lg:pb-[104px] lg:pt-[176px]">
+      <div className="relative mx-auto flex w-full max-w-[784px] flex-col gap-12 px-4 pt-16 pb-16 sm:px-6 sm:pt-24 sm:pb-24 lg:px-0 lg:pt-[176px] lg:pb-[104px]">
         {/* Badge + headline — Figma "Frame 2147234455", gap 32, centred */}
         <div className="flex flex-col items-center gap-8">
           {/* Badge row — 64px rules flanking a 48px pill, Figma "Frame 2147234462".
@@ -137,7 +137,13 @@ export function Hero() {
               className="absolute top-0 left-0 size-0 overflow-hidden"
             >
               <defs>
-                <linearGradient id="hero-badge-icon" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient
+                  id="hero-badge-icon"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
                   <stop offset="0" stopColor="#e6eeff" />
                   <stop offset="1" stopColor="#bac8fa" />
                 </linearGradient>
@@ -152,7 +158,8 @@ export function Hero() {
             <span
               className="flex items-center gap-4 rounded-[24px] px-3 py-2 shadow-[inset_0_0_6px_6px_rgba(0,0,0,0.1)] sm:px-4 sm:py-2.5 lg:px-6 lg:py-3"
               style={{
-                backgroundImage: "linear-gradient(180deg,#1b1b1c 0%,#010102 100%)",
+                backgroundImage:
+                  "linear-gradient(180deg,#1b1b1c 0%,#010102 100%)",
               }}
             >
               <Briefcase
@@ -192,7 +199,10 @@ export function Hero() {
             className="flex w-full flex-col gap-3 rounded-[16px] bg-[#101010] p-4 md:flex-row md:items-center md:gap-6 md:py-2 md:pr-2 md:pl-6"
           >
             <label className="flex min-w-0 flex-1 items-center gap-2">
-              <Search aria-hidden="true" className="size-6 shrink-0 text-white" />
+              <Search
+                aria-hidden="true"
+                className="size-6 shrink-0 text-white"
+              />
               <input
                 type="search"
                 name="query"
@@ -210,7 +220,10 @@ export function Hero() {
             />
 
             <label className="flex min-w-0 flex-1 items-center gap-2">
-              <MapPin aria-hidden="true" className="size-6 shrink-0 text-white" />
+              <MapPin
+                aria-hidden="true"
+                className="size-6 shrink-0 text-white"
+              />
               <input
                 type="search"
                 name="location"

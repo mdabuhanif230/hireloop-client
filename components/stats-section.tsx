@@ -1,65 +1,73 @@
 import Image from "next/image"
 
-import { Briefcase, ChartColumn, Search, Star } from "lucide-react"
-
 /**
- * Stats band directly under the hero — Figma "Assisting over 15,000 job
- * seekers" frame: globe backdrop, centred statement, 4 metric cards.
+ * Stats band directly under the hero — Figma "Frame 2147234448" (1440×550,
+ * page y 955): a centred statement over the hero backdrop, then the 4 metric
+ * cards.
  *
- * globe.png is 1440×1882 with a magenta crown above a black gap; the layer is
- * shifted up by 46% of its width (percentage margins resolve against the
- * container width, so the crop scales with the viewport) which clips the
- * magenta away and starts the band right at the blue horizon.
+ * The band has no backdrop of its own; it sits on top of "Group 1", which
+ * `HeroBackdrop` renders. Cards are 312×254 with the shared Figma linear
+ * gradient (#010102 → #313131): the gradient transform maps the box's top edge
+ * to 12.23% and runs past the bottom (177.28%), so the card never reaches the
+ * lighter stop — the bottom lands on ~#1a1a1b.
  */
+const cardGradient = "linear-gradient(180deg,#010102 12.23%,#313131 177.28%)"
+
 const stats = [
-  { icon: Briefcase, value: "50K", label: "Active Jobs" },
-  { icon: ChartColumn, value: "12K", label: "Companies" },
-  { icon: Search, value: "2M", label: "Job Seekers" },
-  { icon: Star, value: "97%", label: "Satisfaction Rate" },
-]
+  {
+    icon: "/images/icons/stats-1-job-search.svg",
+    value: "50K",
+    label: "Active Jobs",
+  },
+  {
+    icon: "/images/icons/stats-2-ranking.svg",
+    value: "12K",
+    label: "Companies",
+  },
+  {
+    icon: "/images/icons/stats-3-job-search-man.svg",
+    value: "2M",
+    label: "Job Seekers",
+  },
+  {
+    icon: "/images/icons/stats-4-star.svg",
+    value: "97%",
+    label: "Satisfaction Rate",
+  },
+] as const
 
 export function StatsSection() {
   return (
-    // overflow stays visible: the globe layer starts 118px above the section so
-    // its glow ramps across the hero/band boundary instead of being cut by it.
-    // app/page.tsx clips the layer's bottom.
-    <section className="relative pb-12 sm:pb-12 lg:pb-4">
-      {/* Globe — decorative, full-bleed, clipped inside this wrapper */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 overflow-hidden lg:top-[-118px]"
-      >
-        <Image
-          src="/images/globe.png"
-          alt=""
-          width={1440}
-          height={1882}
-          className="-mt-[46%] h-auto w-full max-w-none"
-        />
-      </div>
-
-      <div className="relative z-10 mx-auto w-full max-w-[1320px] px-4 pt-[160px] sm:px-6 sm:pt-[180px] lg:px-[60px] lg:pt-[229px]">
-        {/* Statement — Manrope, centred over the globe's upper hemisphere */}
-        <h2 className="mx-auto max-w-[720px] text-center font-manrope text-[26px] leading-[1.3] font-medium text-balance text-white sm:text-[32px] lg:text-[40px]">
+    <section className="relative">
+      <div className="mx-auto flex w-full max-w-[1320px] flex-col items-center px-4 pt-16 pb-16 sm:px-6 lg:px-0 lg:pt-[72px] lg:pb-[72px]">
+        {/* Statement — Instrument Sans Medium 40/1.3, tracking −1px, white 70%,
+            600px wide (centred in the 1320 container → page x 420). */}
+        <h2 className="w-full max-w-[600px] text-center font-instrument-sans text-[26px] leading-[1.3] font-medium tracking-[-1px] text-white/70 sm:text-[32px] lg:text-[40px]">
           Assisting over 15,000 job seekers find their dream positions.
         </h2>
 
-        {/* Metrics — Figma card row, 4-up from lg, 2-up from sm */}
-        <div className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:mt-[51px] lg:grid-cols-4 lg:gap-5">
-          {stats.map(({ icon: Icon, value, label }) => (
+        {/* Metrics — 4× 312×254 with a 24px gutter (page x 60 → 1380). */}
+        <div className="mt-10 grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:mt-12 lg:grid-cols-4">
+          {stats.map(({ icon, value, label }) => (
             <div
               key={label}
-              className="flex min-h-[176px] flex-col justify-between rounded-[16px] border border-white/[0.08] bg-[#0a0a0b] p-5 lg:min-h-[238px] lg:p-6"
+              style={{ backgroundImage: cardGradient }}
+              className="flex flex-col rounded-[16px] border border-white/10 px-6 pt-6 pb-6 lg:h-[254px]"
             >
-              <span className="flex size-9 items-center justify-center rounded-[10px] border border-white/10 bg-white/[0.04] text-white/90">
-                <Icon aria-hidden="true" className="size-4" />
-              </span>
+              <Image
+                src={icon}
+                alt=""
+                width={24}
+                height={24}
+                className="size-6"
+              />
 
-              <div>
-                <div className="font-manrope text-[40px] leading-none font-semibold text-white lg:text-[44px]">
+              {/* Value block starts at card y 120; label 16px under the value. */}
+              <div className="mt-[72px]">
+                <div className="font-plus-jakarta-sans text-[40px] leading-[1.15] font-semibold tracking-[-0.02em] text-white lg:text-[56px]">
                   {value}
                 </div>
-                <div className="mt-2 font-manrope text-[14px] leading-[1.4] text-white/60 lg:text-[16px]">
+                <div className="mt-4 font-inter-tight text-[18px] leading-[1.65] font-normal text-white">
                   {label}
                 </div>
               </div>

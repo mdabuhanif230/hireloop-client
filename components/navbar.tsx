@@ -134,8 +134,11 @@ export function Navbar() {
               />
             ) : session ? (
               <>
-                <span className="hidden max-w-[170px] truncate font-manrope text-[17px] leading-[1.45] font-semibold text-white xl:inline">
-                  {session.user.name || session.user.email}
+                <span
+                  title={`Welcome, ${session.user.name || session.user.email}`}
+                  className="max-w-[190px] truncate font-manrope text-[14px] leading-[1.45] font-semibold text-white"
+                >
+                  Welcome, {session.user.name || session.user.email}
                 </span>
                 <Button
                   variant="default"
@@ -230,8 +233,11 @@ export function Navbar() {
                 />
               ) : session ? (
                 <>
-                  <span className="truncate px-2.5 pt-1.5 font-manrope text-[15px] leading-[1.45] font-semibold text-white">
-                    {session.user.name || session.user.email}
+                  <span
+                    title={`Welcome, ${session.user.name || session.user.email}`}
+                    className="truncate px-2.5 pt-1.5 font-manrope text-[15px] leading-[1.45] font-semibold text-white"
+                  >
+                    Welcome, {session.user.name || session.user.email}
                   </span>
                   <Button
                     variant="default"
