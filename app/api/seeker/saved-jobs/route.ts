@@ -2,7 +2,8 @@ import type { NextRequest } from "next/server"
 
 import type { SavedSort } from "@/lib/seeker/types"
 import { SAVED_PAGE_SIZE } from "@/lib/seeker/types"
-import { querySavedJobs, removeSavedJob } from "@/lib/seeker/store"
+import { querySavedJobs, removeSavedJob, saveJob } from "@/lib/seeker/store"
+import { getJob } from "@/lib/jobs/store"
 
 /** Bookmarked jobs behind /deshboard/seeker/saved.
  *
@@ -41,4 +42,12 @@ export async function DELETE(request: NextRequest) {
   }
 
   return Response.json({ removed: true })
+}
+
+export async function POST(request: NextRequest) {
+  let body: { jobId?: string }
+  try { body = await request.json() } catch { return Response.json({ error: "Invalid JSON body" }, { status: 400 }) }
+  const job = body.jobId ? getJob(body.jobId) : null
+  if (!job) return Response.json({ error: "Job not found" }, { status: 404 })
+  return Response.json({ saved: saveJob({ id: job.id, title: job.title, company: job.company, companyLogo: job.companyLogo, location: job.location, salary: job.salary, category: job.category }) }, { status: 201 })
 }
