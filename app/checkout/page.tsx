@@ -1,14 +1,21 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useSyncExternalStore } from "react"
 
 import { ArrowLeftIcon, LockIcon } from "lucide-react"
 
 import { CheckoutForm } from "@/components/checkout-form/checkout-form"
 import { CheckoutSummary } from "@/components/checkout-summary/checkout-summary"
-import type { CheckoutCurrency } from "@/lib/checkout/plan"
-import { CHECKOUT_PLAN } from "@/lib/checkout/plan"
+import type { CheckoutCurrency, CheckoutPlan } from "@/lib/checkout/plan"
+import { CHECKOUT_PLAN, getCheckoutPlan } from "@/lib/checkout/plan"
+
+const subscribeToSearch = (callback: () => void) => {
+  window.addEventListener("popstate", callback)
+  return () => window.removeEventListener("popstate", callback)
+}
+const getSearchSnapshot = () => window.location.search
+const getServerSearchSnapshot = () => ""
 
 /** /checkout — Stripe-style payment screen (sandbox: no Stripe key in this
  *  project, the session comes from POST /api/checkout). The marketing navbar
@@ -17,6 +24,9 @@ import { CHECKOUT_PLAN } from "@/lib/checkout/plan"
 export default function CheckoutPage() {
   const router = useRouter()
   const [currency, setCurrency] = useState<CheckoutCurrency>("bdt")
+  const search = useSyncExternalStore(subscribeToSearch, getSearchSnapshot, getServerSearchSnapshot)
+  const planParams = new URLSearchParams(search)
+  const plan: CheckoutPlan = search ? getCheckoutPlan(planParams.get("plan") ?? undefined, planParams.get("audience") ?? undefined) : CHECKOUT_PLAN
 
   function goBack() {
     if (typeof window !== "undefined" && window.history.length > 1) {
@@ -52,12 +62,14 @@ export default function CheckoutPage() {
 
       <main className="mx-auto grid w-full max-w-[1040px] gap-10 px-4 pt-10 pb-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_400px] lg:pt-14">
         <CheckoutSummary
-          plan={CHECKOUT_PLAN}
+          plan={plan}
           currency={currency}
           onCurrencyChange={setCurrency}
         />
 
         <CheckoutForm
+          planId={plan.id}
+          audience={plan.audience}
           currency={currency}
           onPaid={(sessionId) =>
             router.push(
