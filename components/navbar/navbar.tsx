@@ -18,13 +18,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { authClient } from "@/lib/auth-client"
+import { DEFAULT_ROLE, isRole } from "@/lib/roles"
 import { cn } from "@/lib/utils"
-
-const navLinks = [
-  { label: "Browse Jobs", href: "/jobs" },
-  { label: "Company", href: "/companies" },
-  { label: "Pricing", href: "/pricing" },
-] as const
 
 /** Buttons — Manrope SemiBold (Sign In) / Instrument Sans Medium (Get Started), 18px, radius 12. */
 const signInClassName =
@@ -67,11 +62,23 @@ export function Navbar() {
   const pathname = usePathname()
   const [open, setOpen] = React.useState(false)
 
-  // Single shared client — see lib/auth-client.ts. `isPending` on first paint
-  // renders a placeholder so the bar doesn't flash "Sign In" before the session
-  // resolves (and doesn't jump when the signed-in state lands).
+  // Session first — navLinks below builds the Dashboard href from it, and a
+  // `const` in this scope can't be read before this line runs.
   const { data: session, isPending } = authClient.useSession()
   const [signingOut, setSigningOut] = React.useState(false)
+
+  // `isRole` guards the value: an account saved before the role field existed
+  // (or a malformed one) must still land on a real dashboard, so anything
+  // unknown falls back to lib/roles.ts' DEFAULT_ROLE.
+  const dashboardRole =
+    session && isRole(session.user.role) ? session.user.role : DEFAULT_ROLE
+
+  const navLinks = [
+    { label: "Browse Jobs", href: "/jobs" },
+    { label: "Company", href: "/companies" },
+    { label: "Pricing", href: "/pricing" },
+    { label: "Deshboard", href: `/deshboard/${dashboardRole}` },
+  ] as const
 
   async function onSignOut() {
     setSigningOut(true)
@@ -81,6 +88,11 @@ export function Navbar() {
     router.push("/")
     router.refresh()
   }
+
+  // The dashboards are a full-bleed app shell (app/deshboard/layout.tsx) with
+  // their own topbar, and /checkout is Stripe-style payment chrome with its
+  // own back button — the marketing bar steps aside on both.
+  if (pathname === "/checkout" || pathname.startsWith("/deshboard")) return null
 
   // z-10 keeps the bar above the hero backdrop, which bleeds up behind it
   // exactly as Figma's "Group 1" does (it starts 70px above the page frame).

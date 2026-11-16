@@ -1,10 +1,10 @@
-import { Cta } from "@/components/cta"
-import { Features } from "@/components/features"
-import { Footer } from "@/components/footer"
-import { Hero } from "@/components/hero"
-import { JobDiscovery } from "@/components/job-discovery"
-import { Pricing } from "@/components/pricing"
-import { StatsSection } from "@/components/stats-section"
+import { Cta } from "@/components/cta/cta"
+import { Features } from "@/components/features/features"
+import { Footer } from "@/components/footer/footer"
+import { Hero } from "@/components/hero/hero"
+import { JobDiscovery } from "@/components/job-discovery/job-discovery"
+import { Pricing } from "@/components/pricing/pricing"
+import { StatsSection } from "@/components/stats-section/stats-section"
 
 export default function Page() {
   // #010103 is the fill of Figma's "Homepage" frame — the page base every

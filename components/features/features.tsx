@@ -1,6 +1,6 @@
 import Image from "next/image"
 
-import { SectionHeading } from "@/components/section-heading"
+import { SectionHeading } from "@/components/section-heading/section-heading"
 
 /**
  * Features — Figma frame 12022:10967 (1440×672, fill #151516): heading at

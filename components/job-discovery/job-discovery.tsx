@@ -1,6 +1,6 @@
 import Image from "next/image"
 
-import { SectionHeading } from "@/components/section-heading"
+import { SectionHeading } from "@/components/section-heading/section-heading"
 
 /**
  * "Smart job discovery" — Figma frame 12022:10950 (1440×1302): centred

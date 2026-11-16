@@ -3,7 +3,7 @@
 import Image from "next/image"
 import { useState } from "react"
 
-import { SectionHeading } from "@/components/section-heading"
+import { SectionHeading } from "@/components/section-heading/section-heading"
 
 /**
  * Pricing — Figma frame 12022:10634 (1440×987): centred heading at y120, then
