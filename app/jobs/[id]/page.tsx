@@ -4,7 +4,8 @@ import { CompanyOverview } from "@/components/company-overview/company-overview"
 import { JobDescription } from "@/components/job-description/job-description"
 import { JobHero } from "@/components/job-hero/job-hero"
 import { JobHighlights } from "@/components/job-highlights/job-highlights"
-import { getJob } from "@/lib/jobs/store"
+import { allJobIds, getJob, getJob as findJob } from "@/lib/jobs/store"
+import { JobCard } from "@/components/job-card/job-card"
 
 /** /jobs/[id] — server-rendered from the same store the API exposes, so an
  *  unknown id gets a real 404 instead of a client-side "not found" flash. */
@@ -26,6 +27,8 @@ export default async function JobDetailPage({ params }: PageProps) {
 
   if (!job) notFound()
 
+  const suggestions = allJobIds().flatMap(jobId => { const item = findJob(jobId); return item && item.id !== id && item.category === job.category ? [item] : [] }).slice(0, 3)
+
   return (
     <div className="min-h-svh bg-[#010103] text-white">
       <main className="mx-auto w-full max-w-[1200px] px-4 pt-8 pb-20 sm:px-6">
@@ -39,6 +42,7 @@ export default async function JobDetailPage({ params }: PageProps) {
 
           <CompanyOverview company={job.companyProfile} />
         </div>
+        {suggestions.length ? <section className="mt-12"><h2 className="font-manrope text-2xl font-semibold">Similar opportunities</h2><div className="mt-5 grid gap-4 lg:grid-cols-3">{suggestions.map(item => <JobCard key={item.id} job={item} />)}</div></section> : null}
       </main>
     </div>
   )
