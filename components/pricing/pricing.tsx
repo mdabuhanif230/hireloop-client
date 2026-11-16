@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import Link from "next/link"
 import { useState } from "react"
 
 import { SectionHeading } from "@/components/section-heading/section-heading"
@@ -143,6 +144,7 @@ function PlanCard({
   featured,
   features,
   billingCycle,
+  audience,
 }: {
   title: string
   monthlyPrice: number
@@ -150,6 +152,7 @@ function PlanCard({
   featured?: boolean
   features: string[]
   billingCycle: BillingCycle
+  audience: Audience
 }) {
   const price = monthlyPrice === 0
     ? "$0"
@@ -216,8 +219,8 @@ function PlanCard({
       </div>
 
       {/* Button pinned to y371 (24px bottom padding on the 450px card) */}
-      <button
-        type="button"
+      <Link
+        href={monthlyPrice === 0 ? "/sign-up" : `/checkout?plan=${encodeURIComponent(title.toLowerCase())}&audience=${audience}`}
         className={[
           "mt-auto flex h-[55px] w-full items-center rounded-[12px] px-6 transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#5c53fe]/60 focus-visible:outline-none",
           featured ? "bg-white" : "bg-[#595959]/50",
@@ -242,7 +245,7 @@ function PlanCard({
           height={24}
           className="ml-auto size-6"
         />
-      </button>
+      </Link>
     </article>
   )
 }
@@ -282,11 +285,23 @@ export function Pricing() {
 
           <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {plans[audience].map((plan) => (
-              <PlanCard key={plan.title} {...plan} billingCycle={billingCycle} />
+              <PlanCard key={plan.title} {...plan} audience={audience} billingCycle={billingCycle} />
             ))}
           </div>
         </div>
       </div>
+      <PricingFaq />
     </section>
   )
+}
+
+const FAQS = [
+  { q: "Can I cancel my plan at any time?", a: "Yes. You can cancel or change your plan from your billing settings. Your current access remains active through the paid period." },
+  { q: "Are paid plans refundable?", a: "Paid plans include a 14-day money-back guarantee. Contact support with your account email and transaction ID." },
+  { q: "Which payment methods can I use?", a: "The checkout demo accepts card details and supports USD or BDT display. Live payment processing requires a Stripe account connection." },
+  { q: "Can I switch between plans?", a: "Yes. Choose another seeker or recruiter plan at any time. A production deployment should calculate prorated billing through Stripe." },
+]
+
+function PricingFaq() {
+  return <section className="mx-auto mt-20 max-w-3xl px-4 sm:px-6"><h2 className="text-center font-manrope text-3xl font-semibold text-white">Frequently asked questions</h2><div className="mt-8 divide-y divide-white/10 rounded-2xl border border-white/10 bg-[#111114] px-5">{FAQS.map(item => <details key={item.q} className="group py-5"><summary className="cursor-pointer list-none font-medium text-white marker:hidden">{item.q}<span className="float-right text-violet-300 transition group-open:rotate-45">＋</span></summary><p className="mt-3 max-w-2xl text-sm leading-6 text-white/60">{item.a}</p></details>)}</div></section>
 }
