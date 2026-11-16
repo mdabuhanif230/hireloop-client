@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import {
   BadgeCheckIcon,
@@ -12,12 +12,30 @@ import {
 } from "lucide-react"
 
 import type { JobDetail } from "@/lib/jobs/types"
+import { deleteJson, postJson } from "@/hooks/use-api"
 
 /** Detail header: logo, title, "company • Verified Employer", bookmark and
  *  the white Apply Now button. Applying needs an account, so the button leads
  *  to sign-in rather than pretending to file an application. */
 export function JobHero({ job }: { job: JobDetail }) {
   const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(false)
+  useEffect(() => {
+    let active = true
+    fetch("/api/seeker/saved-jobs?limit=100").then(response => response.ok ? response.json() as Promise<{ items: { id: string }[] }> : null).then(data => { if (active && data) setSaved(data.items.some(item => item.id === `saved-${job.id}`)) }).catch(() => undefined)
+    return () => { active = false }
+  }, [job.id])
+
+  async function toggleSaved() {
+    setSaving(true)
+    setError(false)
+    try {
+      if (saved) await deleteJson(`/api/seeker/saved-jobs?id=${encodeURIComponent(`saved-${job.id}`)}`)
+      else await postJson("/api/seeker/saved-jobs", { jobId: job.id })
+      setSaved(!saved)
+    } catch { setError(true) } finally { setSaving(false) }
+  }
 
   return (
     <section className="flex flex-col gap-5 rounded-[16px] border border-white/5 bg-[#151516] p-6 md:flex-row md:items-center">
@@ -63,7 +81,8 @@ export function JobHero({ job }: { job: JobDetail }) {
           type="button"
           aria-pressed={saved}
           aria-label={saved ? "Remove from saved jobs" : "Save this job"}
-          onClick={() => setSaved((value) => !value)}
+          onClick={() => void toggleSaved()}
+          disabled={saving}
           className="grid size-11 cursor-pointer place-items-center rounded-[10px] border border-white/10 text-white/60 transition-colors hover:border-white/25 hover:text-white focus-visible:ring-2 focus-visible:ring-[#5c53fe]/60 focus-visible:outline-none"
         >
           {saved ? (
@@ -83,6 +102,7 @@ export function JobHero({ job }: { job: JobDetail }) {
           Apply Now
         </Link>
       </div>
+      {error ? <p role="alert" className="text-xs text-red-400">Could not update saved jobs.</p> : null}
     </section>
   )
 }
