@@ -5,7 +5,6 @@ import {
   CheckCircle2Icon,
   CreditCardIcon,
   DownloadIcon,
-  PlusIcon,
 } from "lucide-react"
 import { useMemo, useState } from "react"
 
@@ -14,6 +13,9 @@ import { useApi } from "@/hooks/use-api"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { formatDate, formatMoney } from "@/lib/seeker/format"
 import type { BillingInvoice, BillingResponse } from "@/lib/seeker/types"
+import type { PaymentMethod } from "@/lib/seeker/types"
+import { PaymentMethodForm } from "@/components/dashboard/seeker/payment-method-form"
+import { useDemoStorage } from "@/hooks/use-demo-storage"
 
 import { PageHeader } from "../_components/page-header"
 import { Panel } from "../_components/panel"
@@ -36,6 +38,9 @@ const HEADERS = ["Date", "Plan", "Amount", "Transaction ID", "Status"] as const
  *  name or transaction id. */
 export default function BillingPage() {
   const [query, setQuery] = useState("")
+  const [savedMethod, setSavedMethod] = useState<PaymentMethod | null>(null)
+  const [planId] = useDemoStorage("hireloop:seeker-plan", "Pro")
+  const [localPayments] = useDemoStorage<BillingInvoice[]>("hireloop:seeker-payments", [])
   const debouncedQuery = useDebouncedValue(query)
 
   const path = useMemo(() => {
@@ -47,6 +52,9 @@ export default function BillingPage() {
   const { data, loading, error, refetch } = useApi<BillingResponse>(path)
 
   const year = new Date().getFullYear()
+  const paymentMethod = savedMethod ?? data?.paymentMethod ?? null
+  const tier = planId === "Premium" ? { name: "Premium", price: 39, limit: null } : planId === "Free" ? { name: "Free", price: 0, limit: 3 } : { name: "Pro", price: 19, limit: 30 }
+  const history = [...localPayments, ...(data?.history ?? [])].filter(invoice => !query.trim() || `${invoice.plan} ${invoice.transactionId}`.toLowerCase().includes(query.trim().toLowerCase()))
 
   return (
     <>
@@ -83,7 +91,7 @@ export default function BillingPage() {
                     <span className={CHIP_LABEL_CLASS}>Current Plan</span>
                     <div>
                       <h2 className="text-xl font-semibold tracking-[-0.01em]">
-                        {data.plan.name}
+                        {tier.name}
                       </h2>
                       <p className="mt-2 max-w-sm text-sm text-muted-foreground">
                         {data.plan.description}
@@ -94,10 +102,10 @@ export default function BillingPage() {
                   <div className="text-left sm:text-right">
                     <p className="whitespace-nowrap">
                       <span className="text-3xl font-semibold tracking-[-0.02em]">
-                        ${data.plan.price}
+                        ${tier.price}
                       </span>
                       <span className="text-sm text-muted-foreground">
-                        /{data.plan.interval}
+                        {tier.limit === 3 ? "/forever" : "/mo"}
                       </span>
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
@@ -105,6 +113,8 @@ export default function BillingPage() {
                     </p>
                   </div>
                 </div>
+
+                <div className="rounded-lg border border-border bg-black/20 p-3"><div className="flex justify-between text-xs"><span className="text-muted-foreground">Applications used this month</span><span>{data.applicationsUsed} / {tier.limit ?? "Unlimited"}</span></div>{tier.limit ? <div className="mt-2 h-1.5 rounded-full bg-white/10"><div className="h-full rounded-full bg-violet-500" style={{ width: `${Math.min(100, data.applicationsUsed / tier.limit * 100)}%` }} /></div> : null}</div>
 
                 <ul className="grid gap-3 sm:grid-cols-2">
                   {data.plan.features.map((feature) => (
@@ -122,10 +132,10 @@ export default function BillingPage() {
                 </ul>
 
                 <div className="mt-auto flex flex-wrap gap-3 pt-1">
-                  <Link href="/#pricing" className={PRIMARY_BUTTON_CLASS}>
+                  <Link href="/pricing" className={PRIMARY_BUTTON_CLASS}>
                     Upgrade Plan
                   </Link>
-                  <Link href="/#pricing" className={SECONDARY_BUTTON_CLASS}>
+                  <Link href="/pricing" className={SECONDARY_BUTTON_CLASS}>
                     Manage Plan
                   </Link>
                 </div>
@@ -140,7 +150,7 @@ export default function BillingPage() {
                   <span className={CHIP_LABEL_CLASS}>Secure by Stripe</span>
                 </div>
 
-                {data.paymentMethod ? (
+                {paymentMethod ? (
                   <div className="relative overflow-hidden rounded-2xl bg-[radial-gradient(120%_120%_at_10%_10%,#4c1d95_0%,#7c3aed_40%,#db2777_100%)] p-5 text-white shadow-[0_18px_40px_rgba(0,0,0,0.45)]">
                     <span
                       aria-hidden
@@ -154,25 +164,25 @@ export default function BillingPage() {
                         <CreditCardIcon className="size-4 text-amber-900/70" />
                       </span>
                       <span className="text-sm font-bold tracking-[0.18em] italic">
-                        {data.paymentMethod.brand}
+                        {paymentMethod.brand}
                       </span>
                     </div>
 
                     <p className="relative mt-7 font-mono text-lg tracking-[0.22em] tabular-nums">
-                      •••• •••• •••• {data.paymentMethod.last4}
+                      •••• •••• •••• {paymentMethod.last4}
                     </p>
 
                     <div className="relative mt-5 flex items-end justify-between gap-4 text-[10px] tracking-[0.14em] uppercase">
                       <span>
                         Card Holder
                         <span className="mt-1 block text-xs font-semibold tracking-[0.1em]">
-                          {data.paymentMethod.holder}
+                          {paymentMethod.holder}
                         </span>
                       </span>
                       <span className="text-right">
                         Expires
                         <span className="mt-1 block text-xs font-semibold tracking-[0.1em]">
-                          {data.paymentMethod.expires}
+                          {paymentMethod.expires}
                         </span>
                       </span>
                     </div>
@@ -183,13 +193,7 @@ export default function BillingPage() {
                   </p>
                 )}
 
-                <button
-                  type="button"
-                  className="mx-auto inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm text-muted-foreground transition-colors outline-none hover:bg-white/5 hover:text-foreground focus-visible:ring-3 focus-visible:ring-[#5c53fe]/50"
-                >
-                  <PlusIcon className="size-4" />
-                  Add New Payment Method
-                </button>
+                <PaymentMethodForm onSave={setSavedMethod} />
               </Panel>
             </div>
 
@@ -229,14 +233,14 @@ export default function BillingPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {data.history.map((invoice) => (
+                      {history.map((invoice) => (
                         <InvoiceRow key={invoice.id} invoice={invoice} />
                       ))}
                     </tbody>
                   </table>
                 </div>
 
-                {data.history.length === 0 ? (
+                {history.length === 0 ? (
                   <p className="px-5 py-8 text-center text-sm text-muted-foreground">
                     No invoices match “{query.trim()}”.
                   </p>
