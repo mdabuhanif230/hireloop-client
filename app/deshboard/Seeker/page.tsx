@@ -24,6 +24,8 @@ import { Panel } from "./_components/panel"
 import { StatCard, StatRow } from "./_components/stat-card"
 import { ErrorState, RowsSkeleton, StatsSkeleton } from "./_components/states"
 import { NotificationActions, Topbar } from "./_components/topbar"
+import { ProfileAnalytics } from "@/components/dashboard/seeker/profile-analytics"
+import type { SeekerProfile } from "@/lib/seeker/types"
 
 const ACTIVITY_ICON: Record<
   ActivityKind,
@@ -43,6 +45,7 @@ export default function SeekerDeshboardPage() {
   const { data, loading, error, refetch } = useApi<OverviewResponse>(
     "/api/seeker/overview"
   )
+  const { data: profile } = useApi<SeekerProfile>("/api/seeker/profile")
   const [query, setQuery] = useState("")
 
   const activity = useMemo(() => {
@@ -72,6 +75,7 @@ export default function SeekerDeshboardPage() {
           <ErrorState message={error} onRetry={refetch} />
         ) : data ? (
           <>
+            <ProfileAnalytics profile={profile ?? null} distribution={data.statusDistribution} />
             <StatRow>
               <StatCard
                 label="Saved Jobs"
@@ -163,7 +167,7 @@ export default function SeekerDeshboardPage() {
       </div>
 
       <Link
-        href="/deshboard/seeker/jobs"
+        href="/jobs"
         aria-label="Browse jobs"
         title="Browse jobs"
         className="fixed right-5 bottom-5 z-30 flex size-14 items-center justify-center rounded-full bg-white text-black shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-transform outline-none hover:scale-105 focus-visible:ring-3 focus-visible:ring-[#5c53fe]/50 sm:right-8 sm:bottom-8"
