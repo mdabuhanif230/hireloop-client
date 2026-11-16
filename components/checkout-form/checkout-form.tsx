@@ -63,9 +63,13 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
  *  message the endpoint returns and calls `onPaid` with the new session. */
 export function CheckoutForm({
   currency,
+  planId,
+  audience,
   onPaid,
 }: {
   currency: CheckoutCurrency
+  planId: string
+  audience: "seekers" | "recruiters"
   onPaid: (sessionId: string) => void
 }) {
   const [email, setEmail] = React.useState("")
@@ -88,6 +92,8 @@ export function CheckoutForm({
     setError(null)
 
     const payload: CheckoutInput = {
+      plan: planId,
+      audience,
       currency,
       email: email.trim(),
       card: { ...card, country },
