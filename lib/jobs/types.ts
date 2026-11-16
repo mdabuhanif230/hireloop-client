@@ -3,7 +3,7 @@
  *  Everything here is plain JSON so the same shapes serve the route handlers
  *  (app/api/jobs/*) and the client pages that fetch them. */
 
-export const JOB_TYPES = ["Full-time", "Contract", "Freelance"] as const
+export const JOB_TYPES = ["Full-time", "Part-time", "Remote", "Contract", "Internship", "Freelance"] as const
 export type JobType = (typeof JOB_TYPES)[number]
 
 export const JOB_SORTS = ["recent", "salary", "closing"] as const
@@ -34,6 +34,7 @@ export interface JobListItem {
   location: string
   salary: string
   type: JobType
+  category: JobFamily
   mode: string
   badges: JobBadge[]
   postedAt: string
@@ -53,6 +54,8 @@ export interface JobsResponse {
   sort: JobSort
   q: string
   types: JobType[]
+  category: string
+  location: string
 }
 
 export type BenefitKey = "health" | "retirement" | "hardware" | "pto"
