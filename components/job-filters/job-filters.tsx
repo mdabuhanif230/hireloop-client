@@ -1,6 +1,6 @@
 import { CheckIcon } from "lucide-react"
 
-import type { JobType } from "@/lib/jobs/types"
+import type { JobFamily, JobType } from "@/lib/jobs/types"
 import { JOB_TYPES } from "@/lib/jobs/types"
 
 /** Left rail of /jobs: job-type checkboxes with the whole-board counts (they
@@ -10,11 +10,23 @@ export function JobFilters({
   selected,
   onToggle,
   onClear,
+  category,
+  location,
+  minSalary,
+  onCategory,
+  onLocation,
+  onMinSalary,
 }: {
   counts: Record<JobType, number>
   selected: JobType[]
   onToggle: (type: JobType) => void
   onClear: () => void
+  category: string
+  location: string
+  minSalary: number
+  onCategory: (category: JobFamily | "all") => void
+  onLocation: (location: string) => void
+  onMinSalary: (salary: number) => void
 }) {
   return (
     <aside className="h-fit rounded-[16px] border border-white/5 bg-[#151516] p-6">
@@ -22,7 +34,7 @@ export function JobFilters({
         <h2 className="font-manrope text-lg font-semibold text-white">
           Filters
         </h2>
-        {selected.length > 0 && (
+        {(selected.length > 0 || category !== "all" || location || minSalary > 0) && (
           <button
             type="button"
             onClick={onClear}
@@ -70,6 +82,9 @@ export function JobFilters({
           })}
         </ul>
       </fieldset>
+      <label className="mt-5 block text-sm font-medium text-white/60">Location<input value={location} onChange={event => onLocation(event.target.value)} placeholder="City or Remote" className="mt-2 h-10 w-full rounded-lg border border-white/10 bg-black/20 px-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-violet-500" /></label>
+      <label className="mt-5 block text-sm font-medium text-white/60">Category<select value={category} onChange={event => onCategory(event.target.value as JobFamily | "all")} className="mt-2 h-10 w-full rounded-lg border border-white/10 bg-[#101012] px-3 text-sm text-white outline-none focus:border-violet-500"><option value="all">All categories</option><option value="design">Design</option><option value="engineering">Engineering</option><option value="research">Research</option><option value="data">Data & Analytics</option><option value="marketing">Marketing</option></select></label>
+      <label className="mt-5 block text-sm font-medium text-white/60">Minimum salary<select value={minSalary} onChange={event => onMinSalary(Number(event.target.value))} className="mt-2 h-10 w-full rounded-lg border border-white/10 bg-[#101012] px-3 text-sm text-white outline-none focus:border-violet-500"><option value={0}>Any salary</option><option value={90000}>$90k+</option><option value={130000}>$130k+</option><option value={180000}>$180k+</option></select></label>
     </aside>
   )
 }
