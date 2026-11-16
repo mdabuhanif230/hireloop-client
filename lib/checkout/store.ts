@@ -2,6 +2,8 @@ import { randomBytes } from "node:crypto"
 
 import {
   formatAmount,
+  CHECKOUT_PLANS,
+  getCheckoutPlan,
   type CheckoutCurrency,
   type CheckoutSession,
 } from "./plan"
@@ -17,6 +19,8 @@ import {
  *  (CheckoutSession, lib/checkout/plan.ts) stay the same. */
 
 export type CheckoutInput = {
+  plan?: string
+  audience?: string
   currency?: string
   email?: string
   card?: {
@@ -33,6 +37,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 /** Returns the first problem with the payload, or null when it is payable. */
 export function validateCheckout(input: CheckoutInput): string | null {
   const card = input.card ?? {}
+  if (input.plan && (!CHECKOUT_PLANS[input.plan.toLowerCase()] || (input.audience && CHECKOUT_PLANS[input.plan.toLowerCase()].audience !== input.audience))) return "Choose a valid plan."
 
   if (input.currency !== "usd" && input.currency !== "bdt") {
     return "Choose a currency."
@@ -97,18 +102,21 @@ export function createCheckoutSession(
   cardLast4: string
 ): CheckoutSession {
   const currency = input.currency as CheckoutCurrency
+  const plan = getCheckoutPlan(input.plan, input.audience)
   const session: CheckoutSession = {
     // `cs_test_` + 16 mixed-case chars, matching Stripe's session id shape
     // (and the id the success screen prints).
     id: `cs_test_${randomBytes(12).toString("base64url").slice(0, 16)}`,
     status: "complete",
     plan: {
-      name: "Hireloop Pro Plan",
-      description: "Access to all features",
+      name: plan.name,
+      description: plan.description,
     },
+    planId: plan.id,
+    audience: plan.audience,
     currency,
-    usd: 20,
-    amount: formatAmount(currency),
+    usd: plan.usd,
+    amount: formatAmount(currency, plan.usd),
     email: input.email ?? "",
     cardLast4,
     createdAt: new Date().toISOString(),
