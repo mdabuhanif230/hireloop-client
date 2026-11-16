@@ -1,4 +1,5 @@
 import Image from "next/image"
+import Link from "next/link"
 
 import { SectionHeading } from "@/components/section-heading/section-heading"
 
@@ -24,7 +25,9 @@ function JobCard() {
       {/* Title + body — Figma "Title+Body Text" (344×108, 12px apart) */}
       <div className="flex flex-col gap-3">
         <h3 className="font-inter text-[32px] leading-[1.3] font-medium tracking-[-0.05em] text-white">
+          <Link href="/jobs/job-1" className="hover:text-white/75">
           Frontend Developer
+          </Link>
         </h3>
         <p className="font-inter text-[16px] leading-[1.7] tracking-[-0.02em] text-white/60">
           Showcase your commitment to diversity and inclusion by highlighting
@@ -55,8 +58,8 @@ function JobCard() {
 
       {/* Apply — 154×55, #151516 on the #151516 card (the stroke-less button
           reads only by its 12px radius against the card padding) */}
-      <button
-        type="button"
+      <Link
+        href="/jobs/job-1"
         className="mt-8 flex h-[55px] w-[154px] items-center rounded-[12px] bg-[#151516] pr-6 pl-6 transition-colors hover:bg-[#1f1f1f] focus-visible:ring-2 focus-visible:ring-[#5c53fe]/60 focus-visible:outline-none"
       >
         <span className="font-manrope text-[16px] leading-[1.7] font-semibold tracking-[-0.02em] text-white">
@@ -69,7 +72,7 @@ function JobCard() {
           height={24}
           className="ml-auto size-6"
         />
-      </button>
+      </Link>
     </article>
   )
 }
@@ -90,12 +93,12 @@ export function JobDiscovery() {
           </div>
 
           <div className="mt-10 flex justify-center">
-            <button
-              type="button"
+            <Link
+              href="/jobs"
               className="h-[58px] rounded-[12px] bg-white px-6 font-instrument-sans text-[18px] leading-[1.45] font-medium text-[#0b0b14] transition-colors hover:bg-white/90 focus-visible:ring-2 focus-visible:ring-[#5c53fe]/60 focus-visible:outline-none"
             >
               View all job open
-            </button>
+            </Link>
           </div>
         </div>
       </div>
