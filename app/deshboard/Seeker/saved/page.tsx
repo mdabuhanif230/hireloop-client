@@ -228,7 +228,7 @@ export default function SavedJobsPage() {
                 }
               >
                 <Link
-                  href="/deshboard/seeker/jobs"
+                  href="/jobs"
                   className={PRIMARY_BUTTON_CLASS}
                 >
                   Browse jobs
@@ -361,13 +361,13 @@ function SavedJobRow({
           </button>
         ) : job.draftStarted ? (
           <Link
-            href="/deshboard/seeker/jobs"
+            href="/jobs"
             className={SECONDARY_BUTTON_CLASS}
           >
             Draft Started
           </Link>
         ) : (
-          <Link href="/deshboard/seeker/jobs" className={PRIMARY_BUTTON_CLASS}>
+          <Link href="/jobs" className={PRIMARY_BUTTON_CLASS}>
             Apply Now
           </Link>
         )}
