@@ -60,7 +60,7 @@ const menuItemsByRole: Record<Role, MenuItem[]> = {
     {
       id: "seeker-jobs",
       name: "Jobs",
-      url: "/deshboard/seeker/jobs",
+      url: "/jobs",
       icon: Search,
     },
     {
