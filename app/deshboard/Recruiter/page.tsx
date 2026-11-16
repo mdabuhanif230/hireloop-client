@@ -1,11 +1,3 @@
-import React from 'react';
+import { RecruiterOverview } from "@/components/dashboard/recruiter/overview"
 
-const RecruiterDeshboardPage = () => {
-    return (
-        <div>
-           <h2>Recruiter Deshboard</h2> 
-        </div>
-    );
-};
-
-export default RecruiterDeshboardPage;
+export default function RecruiterDashboardPage() { return <RecruiterOverview /> }
