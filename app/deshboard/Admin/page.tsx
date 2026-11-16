@@ -1,11 +1,3 @@
-import React from 'react';
+import { AdminOverview } from "@/components/dashboard/admin/overview"
 
-const AdminDeshboardPage = () => {
-    return (
-        <div>
-            <h2>Admin deshboard</h2>
-        </div>
-    );
-};
-
-export default AdminDeshboardPage;
+export default function AdminDashboardPage() { return <AdminOverview /> }
