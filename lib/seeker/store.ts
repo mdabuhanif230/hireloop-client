@@ -379,6 +379,16 @@ export function removeSavedJob(id: string) {
   return savedJobs.length < before
 }
 
+export function saveJob(input: { id: string; title: string; company: string; companyLogo: string | null; location: string; salary: string; category: string }) {
+  const id = `saved-${input.id}`
+  const existing = savedJobs.find(job => job.id === id)
+  if (existing) return existing
+  const category: SavedJobCategory = input.category === "design" ? "design" : input.category === "engineering" ? "engineering" : "product"
+  const saved: SavedJob = { id, title: input.title, company: input.company, companyLogo: input.companyLogo ?? "/images/logo.png", location: input.location, salary: input.salary, category, savedAt: new Date().toISOString(), closesAt: null, closed: false, draftStarted: false }
+  savedJobs.unshift(saved)
+  return saved
+}
+
 /* ------------------------------------------------------------------ *
  * Applications
  * ------------------------------------------------------------------ */
@@ -596,6 +606,7 @@ const APPLICATIONS_SEED: ApplicationSeed[] = [
 
 const applications: Application[] = APPLICATIONS_SEED.map((seed, index) => ({
   id: `app-${index + 1}`,
+  jobId: null,
   title: seed.title,
   company: seed.company,
   companyLogo: seed.logo ?? null,
@@ -606,6 +617,48 @@ const applications: Application[] = APPLICATIONS_SEED.map((seed, index) => ({
   interviewAt: seed.interviewIn === undefined ? null : at(seed.interviewIn),
   archived: false,
 }))
+
+export function submitApplication(input: {
+  jobId: string
+  title: string
+  company: string
+  companyLogo: string | null
+  type: string
+  mode: string
+  applicantName: string
+  applicantEmail: string
+  resumeName: string
+  coverLetter: string
+}) {
+  const duplicate = applications.find(application => application.jobId === input.jobId && !application.archived)
+  if (duplicate) return { application: duplicate, duplicate: true }
+  const application: Application = {
+    ...input,
+    id: `app-${Date.now()}`,
+    appliedAt: new Date().toISOString(),
+    status: "applied",
+    interviewAt: null,
+    archived: false,
+  }
+  applications.unshift(application)
+  return { application, duplicate: false }
+}
+
+export function getApplicationsForJob(jobId: string) {
+  return applications.filter(application => application.jobId === jobId)
+}
+
+export function getSubmittedApplicationCountThisMonth() {
+  const now = new Date()
+  return applications.filter(application => Boolean(application.jobId) && !application.archived && new Date(application.appliedAt).getMonth() === now.getMonth() && new Date(application.appliedAt).getFullYear() === now.getFullYear()).length
+}
+
+export function updateApplicationStatus(applicationId: string, status: ApplicationStatus) {
+  const application = applications.find(item => item.id === applicationId)
+  if (!application) return null
+  application.status = status
+  return application
+}
 
 export function queryApplications(options: {
   tab?: ApplicationTab
@@ -710,6 +763,10 @@ export function getOverview(): OverviewResponse {
       id: `activity-${index + 1}`,
       createdAt: at(-ACTIVITY_AGO[index]),
     })),
+    statusDistribution: (["applied", "under_review", "shortlisted", "rejected", "offered"] as const).map(status => ({
+      status,
+      count: active.filter(application => application.status === status).length,
+    })),
   }
 }
 
@@ -738,8 +795,8 @@ export function getBilling(query?: string): BillingResponse {
       return {
         id: `invoice-${index + 1}`,
         date: date.toISOString(),
-        plan: olderPlan ? "Standard Tier" : "Professional Tier",
-        amount: olderPlan ? 12 : 29,
+        plan: olderPlan ? "Free" : "Pro",
+        amount: olderPlan ? 0 : 19,
         transactionId: `TRX-${transaction}-HL`,
         status: "paid" as const,
       }
@@ -750,16 +807,11 @@ export function getBilling(query?: string): BillingResponse {
 
   return {
     plan: {
-      name: "Professional Tier",
-      price: 29,
+      name: "Pro",
+      price: 19,
       interval: "mo",
       description: "Unlock global job insights and unlimited applications.",
-      features: [
-        "Unlimited Applications",
-        "Premium Job Insights",
-        "Priority Candidate Badge",
-        "Direct Recruiter Messaging",
-      ],
+      features: ["30 applications per month", "Unlimited saved jobs", "Application tracking", "Salary insights"],
       nextBillingDate: nextBillingDate.toISOString(),
     },
     paymentMethod: {
@@ -775,6 +827,8 @@ export function getBilling(query?: string): BillingResponse {
           )
         )
       : history,
+    applicationsUsed: applications.filter(application => !application.archived && new Date(application.appliedAt).getMonth() === now.getMonth() && new Date(application.appliedAt).getFullYear() === now.getFullYear()).length,
+    applicationLimit: 30,
   }
 }
 
