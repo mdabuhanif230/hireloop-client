@@ -155,7 +155,7 @@ export default function ApplicationsPage() {
                 }
               >
                 <Link
-                  href="/deshboard/seeker/jobs"
+                  href="/jobs"
                   className="inline-flex h-9 items-center justify-center rounded-lg bg-white px-4 text-sm font-medium text-black transition-colors outline-none hover:bg-white/90 focus-visible:ring-3 focus-visible:ring-[#5c53fe]/50"
                 >
                   Browse jobs
@@ -259,7 +259,7 @@ function ApplicationRow({ application }: { application: Application }) {
 
       <td className="px-5 py-4 text-right">
         <Link
-          href="/deshboard/seeker/jobs"
+          href={application.jobId ? `/jobs/${application.jobId}` : "/jobs"}
           className="rounded-md text-zinc-200 transition-colors outline-none hover:text-white focus-visible:ring-3 focus-visible:ring-[#5c53fe]/50"
         >
           Details
