@@ -34,6 +34,7 @@ export interface OverviewResponse {
     offers: number
   }
   activity: ActivityItem[]
+  statusDistribution: { status: ApplicationStatus; count: number }[]
 }
 
 export interface SavedJob {
@@ -71,6 +72,11 @@ export interface SavedJobsResponse {
 
 export interface Application {
   id: string
+  jobId?: string | null
+  applicantName?: string
+  applicantEmail?: string
+  resumeName?: string
+  coverLetter?: string
   title: string
   company: string
   /** null → the page falls back to a monogram tile. */
@@ -128,6 +134,8 @@ export interface BillingResponse {
   plan: BillingPlan
   paymentMethod: PaymentMethod | null
   history: BillingInvoice[]
+  applicationsUsed: number
+  applicationLimit: number | null
 }
 
 export interface ResumeFile {
