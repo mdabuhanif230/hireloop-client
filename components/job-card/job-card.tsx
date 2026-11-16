@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import {
   BookmarkCheckIcon,
@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 
 import type { JobBadge, JobListItem } from "@/lib/jobs/types"
+import { deleteJson, postJson } from "@/hooks/use-api"
 
 /** Badge chip colours — Easy Apply reads green, Hot Job amber, both on the
  *  #1f1f1f chip fill used by the salary/type chips. */
@@ -44,8 +45,33 @@ function Chip({
 
 /** One row of the /jobs list. The bookmark is intentionally local: the board
  *  is public, so there is no session to persist it against yet. */
-export function JobCard({ job }: { job: JobListItem }) {
+export function JobCard({ job, onApply, showApply = false }: { job: JobListItem; onApply?: () => void; showApply?: boolean }) {
   const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    fetch("/api/seeker/saved-jobs?limit=100")
+      .then(response => response.ok ? response.json() as Promise<{ items: { id: string }[] }> : null)
+      .then(data => { if (active && data) setSaved(data.items.some(item => item.id === `saved-${job.id}`)) })
+      .catch(() => undefined)
+    return () => { active = false }
+  }, [job.id])
+
+  async function toggleSaved() {
+    setSaving(true)
+    setSaveError(false)
+    try {
+      if (saved) await deleteJson(`/api/seeker/saved-jobs?id=${encodeURIComponent(`saved-${job.id}`)}`)
+      else await postJson("/api/seeker/saved-jobs", { jobId: job.id })
+      setSaved(!saved)
+    } catch {
+      setSaveError(true)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <article className="flex gap-4 rounded-[16px] border border-white/5 bg-[#151516] p-5 transition-colors hover:border-white/15">
@@ -82,8 +108,9 @@ export function JobCard({ job }: { job: JobListItem }) {
                 ? `Remove ${job.title} from saved jobs`
                 : `Save ${job.title}`
             }
-            onClick={() => setSaved((value) => !value)}
-            className="-mt-1.5 ml-auto cursor-pointer rounded-lg p-2 text-white/45 transition-colors hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-[#5c53fe]/60 focus-visible:outline-none"
+            onClick={() => void toggleSaved()}
+            disabled={saving}
+            className="-mt-1.5 ml-auto cursor-pointer rounded-lg p-2 text-white/45 transition-colors hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-[#5c53fe]/60 focus-visible:outline-none disabled:opacity-50"
           >
             {saved ? (
               <BookmarkCheckIcon
@@ -128,6 +155,8 @@ export function JobCard({ job }: { job: JobListItem }) {
             </Chip>
           ))}
         </div>
+        {showApply ? <button type="button" onClick={onApply} className="mt-4 h-9 self-start rounded-lg bg-white px-4 text-sm font-medium text-black hover:bg-white/90">Apply Now</button> : null}
+        {saveError ? <p role="alert" className="mt-2 text-xs text-red-400">Could not update saved jobs.</p> : null}
       </div>
     </article>
   )
