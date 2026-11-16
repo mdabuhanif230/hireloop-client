@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 
 import { ArrowRightIcon, CheckIcon, ShieldCheckIcon } from "lucide-react"
 
@@ -12,6 +13,17 @@ import type { CheckoutSession } from "@/lib/checkout/plan"
 export function PaymentSuccess({ session }: { session: CheckoutSession }) {
   const router = useRouter()
   const planTitle = session.plan.name.replace(/ Plan$/, "")
+  useEffect(() => {
+    const key = session.audience === "recruiters" ? "hireloop:recruiter-plan" : "hireloop:seeker-plan"
+    const value = session.planId === "pro" ? "Pro" : session.planId === "premium" ? "Premium" : session.planId === "growth" ? "Growth" : "Enterprise"
+    window.localStorage.setItem(key, JSON.stringify(value))
+    const paymentsKey = session.audience === "recruiters" ? "hireloop:recruiter-payments" : "hireloop:seeker-payments"
+    const previous = JSON.parse(window.localStorage.getItem(paymentsKey) ?? "[]") as unknown[]
+    if (!previous.some((payment: unknown) => typeof payment === "object" && payment !== null && "id" in payment && payment.id === session.id)) {
+      previous.unshift({ id: session.id, date: session.createdAt, plan: session.plan.name.replace(/ Plan$/, ""), amount: session.usd, transactionId: session.id, status: "paid" })
+      window.localStorage.setItem(paymentsKey, JSON.stringify(previous))
+    }
+  }, [session])
 
   return (
     <div className="relative flex min-h-[72vh] items-center justify-center px-4 py-16">
@@ -74,7 +86,7 @@ export function PaymentSuccess({ session }: { session: CheckoutSession }) {
         </div>
 
         <Link
-          href="/deshboard/recruiter"
+          href={session.audience === "recruiters" ? "/deshboard/recruiter" : "/deshboard/seeker/billing"}
           className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-white font-manrope text-[15px] font-semibold text-[#0b0b14] transition-colors hover:bg-white/90 focus-visible:ring-2 focus-visible:ring-[#5c53fe]/60 focus-visible:outline-none"
         >
           Go to Workspace Dashboard
