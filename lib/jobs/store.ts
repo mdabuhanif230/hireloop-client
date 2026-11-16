@@ -439,7 +439,7 @@ const JOB_SEEDS: JobSeed[] = [
   },
 ]
 
-const jobs: JobDetail[] = JOB_SEEDS.map((seed) => {
+const seedJobs: JobDetail[] = JOB_SEEDS.map((seed) => {
   const copy = DESCRIPTIONS[seed.family](seed.company)
   return {
     id: seed.id,
@@ -449,6 +449,7 @@ const jobs: JobDetail[] = JOB_SEEDS.map((seed) => {
     location: seed.location,
     salary: seed.salary,
     type: seed.type,
+    category: seed.family,
     mode: seed.mode,
     badges: seed.badges ?? [],
     postedAt: ago(seed.postedDaysAgo),
@@ -471,6 +472,12 @@ const jobs: JobDetail[] = JOB_SEEDS.map((seed) => {
   }
 })
 
+function jobStore() {
+  const shared = globalThis as typeof globalThis & { __hireloopJobs?: JobDetail[] }
+  shared.__hireloopJobs ??= seedJobs
+  return shared.__hireloopJobs
+}
+
 /* ------------------------------------------------------------------ *
  * Queries
  * ------------------------------------------------------------------ */
@@ -490,17 +497,24 @@ function isType(value: string): value is JobType {
 export function queryJobs(options: {
   q?: string
   types?: string[]
+  category?: string
+  location?: string
+  minSalary?: number
   sort?: string
   page?: number
 }): JobsResponse {
   const q = (options.q ?? "").trim().toLowerCase()
   const types = (options.types ?? []).filter(isType)
+  const category = options.category ?? "all"
+  const location = (options.location ?? "").trim().toLowerCase()
+  const minSalary = Math.max(0, Number(options.minSalary) || 0)
   const sort: JobSort =
     options.sort === "salary" || options.sort === "closing"
       ? options.sort
       : "recent"
   const page = Math.max(1, options.page ?? 1)
 
+  const jobs = jobStore()
   const matching = jobs.filter((job) => {
     const inTypes = types.length === 0 || types.includes(job.type)
     const matchesQuery =
@@ -508,7 +522,10 @@ export function queryJobs(options: {
       [job.title, job.company, job.location, job.salary].some((field) =>
         field.toLowerCase().includes(q)
       )
-    return inTypes && matchesQuery
+    const matchesCategory = category === "all" || job.category === category
+    const matchesLocation = !location || job.location.toLowerCase().includes(location) || (location === "remote" && job.mode === "Remote")
+    const matchesSalary = salaryTop(job.salary) >= minSalary
+    return inTypes && matchesQuery && matchesCategory && matchesLocation && matchesSalary
   })
 
   const sorted = [...matching].sort((a, b) => {
@@ -541,13 +558,26 @@ export function queryJobs(options: {
     sort,
     q: options.q ?? "",
     types,
+    category,
+    location: options.location ?? "",
   }
 }
 
 export function getJob(id: string): JobDetail | null {
-  return jobs.find((job) => job.id === id) ?? null
+  return jobStore().find((job) => job.id === id) ?? null
 }
 
 export function allJobIds() {
-  return jobs.map((job) => job.id)
+  return jobStore().map((job) => job.id)
+}
+
+export function createJob(input: {
+  title: string; company: string; companyLogo?: string | null; category: JobFamily; type: JobType; mode: string; location: string; salary: string; experience: string; website?: string; size?: string; industry?: string; description: string; responsibilities: string[]; requirements: string[]; benefits?: string[]; deadline?: string
+}) {
+  const id = `job-${Date.now()}`
+  const job: JobDetail = {
+    id, title: input.title, company: input.company, companyLogo: input.companyLogo ?? null, location: input.location, salary: input.salary, type: input.type, category: input.category, mode: input.mode, badges: [], postedAt: new Date().toISOString(), verified: true, experience: input.experience || "Not specified", closesAt: input.deadline ? new Date(input.deadline).toISOString() : null, description: input.description, responsibilities: input.responsibilities, requirementTags: input.requirements.slice(0, 4), requirements: input.requirements, benefits: ["health", "retirement", "hardware", "pto"], companyProfile: { name: input.company, logo: input.companyLogo ?? null, size: input.size ?? "1–50 employees", industry: input.industry ?? input.category, website: input.website ?? "" },
+  }
+  jobStore().unshift(job)
+  return job
 }
